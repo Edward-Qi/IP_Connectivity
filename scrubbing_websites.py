@@ -7,6 +7,7 @@ import requests                                                                 
 import bs4
 import time
 import subprocess
+import pickle
 
 INITIAL_URL = r"https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=1&gNr=50"             # The link that contains all IPs in Toronto
 WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_all.txt'                      # File that contains all the ip addresses
@@ -42,12 +43,16 @@ def pingIPs(numPings, allIPs, pingFile):
         commandString = "ping -n " + str(numPings) + " -w 3000 " + str(i)                   # Loop through all IPs, and ping each one numPings times.
         commandOut = subprocess.check_output(commandString)                                 # -w specifies the timeout value, -n specifies the number of times to ping
         f = open(pingFile, "a+")
-        f.write(commandOut + '\n')                                                                 # Record the output and write to the file.
+        f.write(str(commandOut))                                                                 # Record the output and write to the file.
+        f.write('\n' + 50 * "-" + '\n')
         f.close()
-        if ((time.time() - currentTime) > 5):
+        if ((time.time() - currentTime) > 300):
             print("Five minutes has passed, I am still pinging! Currently on IP: " + str(i))
             currentTime = time.time()                                                               # Indicate that the program is still pinging and reset timer
 
+with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:
+    e = pickle.load(input_file)
 
+pingIPs(15, e, r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt")
 
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # Only needs to be run ONCE! Writes the raw data from the site to a text file.
