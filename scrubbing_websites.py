@@ -22,7 +22,7 @@ class IPAddress:
     # Function Name: __init__
     # Function Description: Initiate the IP Address. 
     # Parameters: longitude (The longitude where the IP address is located), latitude (The longitude where the IP address is located), 
-    # average (The average time it takes to send 15 ping requests), zipCode (The zip code of the ip address)
+    # average (The average time it takes to send n ping requests (The time is recorded in ms)), zipCode (The zip code of the ip address)
     # Returns: None
     # Throws: None
 
@@ -31,6 +31,10 @@ class IPAddress:
         self.latitude = latitude
         self.average = average
         self.zipCode = zipCode
+    
+    # Mutate the average value
+    def changeAvg(self, newVal):
+        self.average = newVal
 
     # Accessor method for the longitude
     def getLongitude(self):
