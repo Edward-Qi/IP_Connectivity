@@ -32,10 +32,15 @@ class IPAddress:
         self.latitude = latitude
         self.average = average
         self.zipCode = zipCode
+        self.zScore = 0
     
     # Mutate the average value
     def changeAvg(self, newVal):
         self.average = newVal
+
+    # Mutate the z-score
+    def changeZScore(self, score):
+        self.zScore = score
 
     # Accessor method for the longitude
     def getLongitude(self):
@@ -52,6 +57,10 @@ class IPAddress:
     # Accessor method for the zipCode
     def getZipCode(self):
         return self.zipCode
+
+    # Accessor method for the zipCode
+    def getZScore(self):
+        return self.zScore
 
 def getRawIPAddresses(fileToWrite, loopTo):
 
