@@ -56,6 +56,8 @@ def pingIPs(numPings, allIPs, pingFile):
             currentTime = time.time()                                                               # Indicate that the program is still pinging and reset timer
     return errorCount
 
+def getLongandLat(hashMapIP):
+    print(hashMapIP)
 
 with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:
     e = pickle.load(input_file)
