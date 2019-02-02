@@ -20,6 +20,7 @@ IP_LIST = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle" 
 UPPER_BOUND = 9751                                                                                                                 # The upper bound of the ip links
 IPADDRESS_DICT_FILE_NO_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_No_Avg.pickle"             # The location of the pickle file that stores the information regarding IP addresses.
 IPADDRESS_DICT_FILE_WITH_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_With_Avg.pickle"         # The location of the pickle file that contains information on IP Addresses with the averages
+IPADDRESS_DICT_FILE_WITH_ZSCORES = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_With_Avg_AND_ZScore.pickle"       # Pickle file with all perks and with ips with a zscore of 0
 IMAGE_TWO_D_PLOT = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\image_TwoD_Plot.png"                            # The plot of the 2-D plot 
 
 class IPAddress:
@@ -142,8 +143,6 @@ def pingIPs(numPings, allIPs, pingFile):
     print("All done. The error count was: " + str(errorCount))
     return errorCount
 
-#def getSingleLongandLat(ip):
-
 def getLongandLat(allIPs, dumpInto):
 
     # Function Name: getLongandLat
@@ -197,73 +196,89 @@ def parsePingFileForAvgs(pingFile, getIPObjectsNoAvg, dumpInto):
                 num += 1
     with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
         pickle.dump(ipDict, f)
-    print(num)
+    print(num)                                  # Print number of errors, print length of dictionary
     print(len(ipDict))
 
 def getAverageAndStdDev(ipDictionary):
 
     # Function Name: getAverageAndStdDev
     # Function Description: Calculate the avergae and the standard deviation of all the values in the list.
-    # Parameters: ipDictionary (The dictionary of IP objects) 
+    # Parameters: ipDictionary (The dictionary file name of IP objects) 
     # Returns: A tuple containing the average and the standard deviation.
     # Throws: None
 
+    with open(ipDictionary, "rb") as ips:           # Pickle list file
+        ipDict = pickle.load(ips)
     calList = []
     numVals = 0
-    for i, val in ipDictionary.items():                             # Loop through the entire list and append to list
-        theAverage = float(val.getAverage())                        # Ensure it is the float form
-        if (theAverage != 0.0):
-            calList.append(theAverage)
-            numVals += 1                                            # Tract the number of valid data points    
+    for i, val in ipDict.items():                             # Loop through the entire list and append to list
+        try:
+            theAverage = float(val.getAverage())                    # Ensure it is the float form
+            if (theAverage != 0.0):
+                calList.append(theAverage)
+                numVals += 1                                        # Tract the number of valid data points  
+        except ValueError:   
+            pass                                                    # Nothing will happen                                          
     avg = statistics.mean(calList)                                  # Calculate the average and the standard deviation
     std = statistics.stdev(calList)
-    print("The number of used in the averages and standard deviation: " + str(numVals))
+    print("The number of used in the averages and standard deviation in getAverageAndStdDev: " + str(numVals))
     return (avg, std)
 
-def upDateZScore(ipDictionary, theCityAvg, theCitySTD):
+def upDateZScore(ipDictionary, theCityAvg, theCitySTD, dumpInto):
 
     # Function Name: upDateZScore
     # Function Description: Update all the z-scores in the dictionary.
-    # Parameters: ipDictionary (The dictionary of IP objects) --> Changes the object, 
-    # theCityAvg (The average of ping responses from the city), theCitySTD (The cities standard deviation) 
+    # Parameters: ipDictionary (The dictionary file name of IP objects) theCityAvg (The average of ping responses from the city), 
+    # theCitySTD (The cities standard deviation), dumpInto (The file with all the information)
     # Returns: None
     # Throws: None
 
-    numVals = 0
-    for i, val in ipDictionary.items():   
-        thePingAverage = float(val.getAverage()) 
-        if (thePingAverage != 0.0):
-            newZ = (thePingAverage - theCityAvg) / theCitySTD
-            val.changeZScore(newZ)
-            numVals += 1
-    print("The number of used in the averages and standard deviation: " + str(numVals))
+    with open(ipDictionary, "rb") as ips:           # Pickle the file
+        ipDict = pickle.load(ips)
+    numVals = 0                                     # Diagnostic information
+    leanDict = {}
+    for i, val in ipDict.items():                   # Loop through the entire dictionary, only use values with a positive average
+        try:                                        # and place it in the newer dictionary
+            thePingAverage = float(val.getAverage()) 
+            if (thePingAverage != 0.0):
+                newZ = (thePingAverage - theCityAvg) / theCitySTD
+                numVals += 1
+                leanDict[i] = IPAddress(val.getLongitude(), val.getLatitude(), val.getAverage(), val.getZipCode()) 
+                leanDict[i].changeZScore(newZ) 
+        except ValueError: 
+            pass
+    with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
+        pickle.dump(leanDict, f)
+    print("The number of used in the averages and standard deviation in upDateZScore: " + str(numVals))
 
-def graph2D(ipDictionary, fileFigure):
+def graphTwoD(ipDictionary, fileFigure):
 
-    # Function Name: graph2D
+    # Function Name: graphTwoD
     # Function Description: Plot a 2D representation of the data.
-    # Parameters: ipDictionary (The dictionary of IP objects), fileFigure (The destination of the python file) 
+    # Parameters: ipDictionary (The dictionary name of IP objects), fileFigure (The destination of the python file) 
     # Returns: None
     # Throws: None
 
+    with open(ipDictionary, "rb") as ips:           # Pickle the file
+        ipDict = pickle.load(ips)
     longitudeAxis = []                                  # The three different types of axises
     latitudeAxis = []
     colourZScore = []
-    for ind, vals in ipDictionary.items():              # Iterate throught the entire dictionary and get the axis points
+    for ind, vals in ipDict.items():                    # Iterate throught the entire dictionary and get the axis points
         longitudeAxis.append(vals.getLongitude())
         latitudeAxis.append(vals.getLatitude())
         colourZScore.append(vals.getZScore())
-    fig = plt.figure()
     plt.plot(longitudeAxis, latitudeAxis, c=colourZScore)                   # Plot the appropriate values
     plt.title('Internet Speed Relative To Torontonians')
     plt.ylabel('Latitude')
     plt.xlabel('Longitude')
-    fig = plt.figure()
-    fig.savefig(fileFigure)
+    plt.savefig(fileFigure)
 
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # 1. FIRST TASK: Writes the raw data from the site to a text file.
 ######parseIPAddresses(WRITE_TO_IPS, IP_LIST)                 # 2. SECOND TASK: Writes the ip addresses into a list 
 ######errorCount = pingIPs(15, e, PING_FILE)                  # 3. THIRD TASK: Ping the specified desired IP Addresses
 ######getLongandLat(ipDict, IPADDRESS_DICT_FILE_NO_AVG)       # 4. FOURTH TASK: Find the longitude and latitude of each 
 ######parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
-
+######(avg, std) = getAverageAndStdDev(IPADDRESS_DICT_FILE_WITH_AVG)          # 6. SIXTH TASK: Find the average and the standard deviation
+######upDateZScore(IPADDRESS_DICT_FILE_WITH_AVG, avg, std, IPADDRESS_DICT_FILE_WITH_ZSCORES)  # 7. SEVENTH TASK: Put the z-scores into the dictionary and pickle
+graphTwoD(IPADDRESS_DICT_FILE_WITH_ZSCORES, IMAGE_TWO_D_PLOT)   # 8. EIGTH TASK: Put the data into a graph.
