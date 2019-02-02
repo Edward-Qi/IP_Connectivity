@@ -38,21 +38,28 @@ def getRawIPAddresses(fileToWrite, loopTo):
 # Throws: None
 
 def pingIPs(numPings, allIPs, pingFile):
+    errorCount = 0
     currentTime = time.time()
     for i in allIPs:
-        commandString = "ping -n " + str(numPings) + " -w 3000 " + str(i)                   # Loop through all IPs, and ping each one numPings times.
-        commandOut = subprocess.check_output(commandString)                                 # -w specifies the timeout value, -n specifies the number of times to ping
-        f = open(pingFile, "a+")
-        f.write(str(commandOut))                                                                 # Record the output and write to the file.
-        f.write('\n' + 50 * "-" + '\n')
-        f.close()
+        try:
+            commandString = "ping -n " + str(numPings) + " -w 3000 " + str(i)                   # Loop through all IPs, and ping each one numPings times.
+            commandOut = subprocess.check_output(commandString)                                 # -w specifies the timeout value, -n specifies the number of times to ping
+            f = open(pingFile, "a+")
+            f.write(str(commandOut))                                                                 # Record the output and write to the file.
+            f.write('\n' + 50 * "-" + '\n')
+            f.close()
+        except:
+            errorCount += 1
+            print("There was an error at IP: " + str(i))
         if ((time.time() - currentTime) > 300):
             print("Five minutes has passed, I am still pinging! Currently on IP: " + str(i))
             currentTime = time.time()                                                               # Indicate that the program is still pinging and reset timer
+    return errorCount
+
 
 with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:
     e = pickle.load(input_file)
 
-pingIPs(15, e, r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt")
-
+errorCount = pingIPs(15, e, r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt")
+print("All done. The error count was: " + str(errorCount))
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # Only needs to be run ONCE! Writes the raw data from the site to a text file.
