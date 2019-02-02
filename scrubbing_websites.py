@@ -8,6 +8,7 @@ import bs4
 import time
 import subprocess
 import pickle
+import re                           # Import the regex module.
 
 INITIAL_URL = r"https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=1&gNr=50"             # The link that contains all IPs in Toronto
 WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_all.txt'                      # File that contains all the ip addresses
@@ -64,6 +65,34 @@ def getRawIPAddresses(fileToWrite, loopTo):
         print(str(i) + ": Another Request Good.")
         time.sleep(1)                                                                                                # Prevent the program from sending too many requests                                                                        
 
+# Function Name: parseIPAddresses
+# Function Description: The function parses the IP addresses from the raw data file 
+# Parameters: rawIPFile (The data that was scrubbed from the internet), dumpInto (The pickle file that will retrieve the dumped list)
+# Returns: errorCount (The number of lines that could not be parsed)
+# Throws: Throw an error when the line cannot be read.
+
+def parseIPAddresses(rawIPFile, dumpInto):
+    ipAddresses = []                                                                # Where the final ip address will be stored.
+    err_occur = []                                                                  # The list where we will store results.
+    errorCount = 0
+    pattern = re.compile(r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b")                 # Compile regular expression to match any ip address.
+    try:                              # Try to:
+        with open (rawIPFile, 'rt', encoding='windows-1252') as in_file:          # open file for reading text.
+            for linenum, line in enumerate(in_file):        # Keep track of line numbers.
+                if pattern.search(line) != None:          # If pattern search finds a match,
+                    err_occur.append((linenum, line.rstrip('\n'))) # strip linebreaks, store line and line number as tuple.
+                    start = '/lookup/'
+                    end = "'>"
+                    try:
+                        ipAddresses.append((line.split(start))[1].split(end)[0])            # Append the IP address
+                    except:
+                        print("Error: The line that cannot be parsed." + line +'\n' + '\n')
+                        errorCount +=1                                                          # Indicate a failed parsed line, inc error count
+    except FileNotFoundError:                   # If input file not found,
+        print("Input file not found.")               # print an error message. 
+    with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
+        pickle.dump(ipAddresses, f)
+
 # Function Name: pingIPs
 # Function Description: The function pings all provided ip addresses for packets and records the necessary information.
 # Parameters: numPings (The number of pings to send to each IP), allIPs (The list that contains all the IP addresses to ping), 
@@ -74,9 +103,9 @@ def getRawIPAddresses(fileToWrite, loopTo):
 def pingIPs(numPings, allIPs, pingFile):
     errorCount = 0                                                                              # Track the number of throw aways
     currentTime = time.time()
-    for i in allIPs:
+    for idx, val in enumerate(allIPs):
         try:
-            commandString = "ping -n " + str(numPings) + " -w 3000 " + str(i)                   # Loop through all IPs, and ping each one numPings times.
+            commandString = "ping -n " + str(numPings) + " -w 3000 " + str(val)                   # Loop through all IPs, and ping each one numPings times.
             commandOut = subprocess.check_output(commandString)                                 # -w specifies the timeout value, -n specifies the number of times to ping
             f = open(pingFile, "a+")
             f.write(str(commandOut))                                                            # Record the output and write to the file.
@@ -84,9 +113,9 @@ def pingIPs(numPings, allIPs, pingFile):
             f.close()
         except:
             errorCount += 1                                                                     # Keep the algorithm purring, record failed query
-            print("There was an error at IP: " + str(i))
+            print("There was an error at IP: " + str(val) + " Located at index: " + str(idx))
         if ((time.time() - currentTime) > 300):
-            print("Five minutes has passed, I am still pinging! Currently on IP: " + str(i))
+            print("Five minutes has passed, I am still pinging! Currently on IP: " + str(val) + " Located at index: " + str(idx))
             currentTime = time.time()                                                               # Indicate that the program is still pinging and reset timer
     return errorCount
 
@@ -111,6 +140,7 @@ def getLongandLat(allIPs):
                  print(str(i) + ": There was an error in getting this IPs information.")
         except:
             print(str(i) + ": There was an error in getting this IPs information.")                 # Keep the program purring, record error and move on
+        time.sleep(0.1)                                                                             # Create a slight delay in the program to prevent a crash
     return ipMap
 
 
