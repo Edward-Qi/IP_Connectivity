@@ -12,7 +12,7 @@ import re                           # Import the regex module.
 
 INITIAL_URL = r"https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=1&gNr=50"             # The link that contains all IPs in Toronto
 WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_all.txt'                      # File that contains all the ip addresses
-WRITE_TO_PINGS = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt"                               # Write the pings to this file
+PING_FILE = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt"                                    # Write the pings to this file
 UPPER_BOUND = 9751                                                                                          # The upper bound of the ip links
 
 class IPAddress:
@@ -153,10 +153,26 @@ def getLongandLat(allIPs, dumpInto):
             pickle.dump(ipMap, f)
     return ipMap
 
+def parsePingFileForAvgs(pingFile, ipDictionary):  
+
+    # Function Name: parsePingFileForAvgs
+    # Function Description: Parse the ping file and get the average speeds
+    # Parameters: pingFile (The file with all the ping requests), ipDictionary (The ip dictionary that contains all the keys)
+    # Returns: None
+    # Throws: None
+
+    with open(pingFile, "r") as f:
+        lines = f.readlines()
+        for l in lines[1::2]:                                               # Loop through all lines, ignoring header.
+            ip = (l.split('Pinging ')[-1].split('with')[0])                 # Add last element to list (i.e. the process name)
+            ip = ip.strip()                                                 # Remove the white space at the end.
+            avg = (l.split()[-1].split(r"\r")[0])                           # Parse the average 
+            avg = re.sub("[^0-9]", "", avg)                                 
+            ipDictionary[ip].changeAvg(avg)                                 # Change the value of the average 
 
 with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:               # Pickle list file
     e = pickle.load(input_file)
 
-errorCount = pingIPs(15, e, r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt")
+errorCount = pingIPs(15, e, PING_FILE)
 print("All done. The error count was: " + str(errorCount))
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # Only needs to be run ONCE! Writes the raw data from the site to a text file.
