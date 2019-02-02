@@ -1,7 +1,39 @@
 import pickle 
 import time
+import requests
 
 PICKLE_IP_INFO = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\IP_Address_Information.pickle"
+
+class IPAddress:
+
+    # Function Name: __init__
+    # Function Description: Initiate the IP Address. 
+    # Parameters: longitude (The longitude where the IP address is located), latitude (The longitude where the IP address is located), 
+    # average (The average time it takes to send 15 ping requests), zipCode (The zip code of the ip address)
+    # Returns: None
+    # Throws: None
+
+    def __init__(self, longitude, latitude, average, zipCode):
+        self.longitude = longitude
+        self.latitude = latitude
+        self.average = average
+        self.zipCode = zipCode
+
+    # Accessor method for the longitude
+    def getLongitude(self):
+        return self.longitude
+
+    # Accessor method for the latitude
+    def getLatitude(self):
+        return self.latitude
+
+    # Accessor method for the average of packets sent
+    def getAverage(self):
+        return self.average
+
+    # Accessor method for the zipCode
+    def getZipCode(self):
+        return self.zipCode
 
 def getLongandLat(allIPs, dumpInto):
     ipMap = {}   

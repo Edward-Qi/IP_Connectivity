@@ -121,26 +121,29 @@ def pingIPs(numPings, allIPs, pingFile):
 
 # Function Name: getLongandLat
 # Function Description: With the list of valid ips, get all the necessary information to map speed onto a graph
-# Parameters: allIPs (List of all valid ips)
+# Parameters: allIPs (List of all valid ips), dumpInto (The pickle file with the dictionary of IP objects)
 # Returns: ipMap (A map to IPAddress objects that store necessary information)
 # Throws: An error if there is an issue with a request. The errors are caught to prevent program termination.
 
-def getLongandLat(allIPs):
-    ipMap = {}                                                                                      # Store the ip address information in a hash table
-    for i in allIPs:
-        stringBuilder = r"http://ip-api.com/json/" + str(i)                                         # Build a string to send request for json
-        insertObject = None                                                                         # Set the default value to none
-        try:
-            res = requests.get(stringBuilder)
-            data = res.json()                                                                       # Retrieve the JSON format text and build the object with the necessary information
-            if (data['status'] == 'success'):
-                insertObject = IPAddress(data['lon'], data['lat'], 0, data['zip'])                  # Add proper content
-                ipMap[i] = insertObject
-            else:
-                 print(str(i) + ": There was an error in getting this IPs information.")
-        except:
-            print(str(i) + ": There was an error in getting this IPs information.")                 # Keep the program purring, record error and move on
-        time.sleep(0.1)                                                                             # Create a slight delay in the program to prevent a crash
+def getLongandLat(allIPs, dumpInto):
+    ipMap = {}   
+    currentTime = time.time()                                                                   # Store the ip address information in a hash table
+    for i, val in enumerate(allIPs):
+        stringBuilder = r"http://ip-api.com/json/" + str(val)                                   # Build a string to send request for json
+        insertObject = None                                                                     # Set the default value to none
+        res = requests.get(stringBuilder)
+        data = res.json()                                                                       # Retrieve the JSON format text and build the object with the necessary information
+        if (data['status'] == 'success'):
+            insertObject = IPAddress(data['lon'], data['lat'], 0, data['zip'])                  # Add proper content
+            ipMap[val] = insertObject                                                           # Add the IP to the dictionary
+        else:
+            print(str(val) + ": There was an error in getting this IPs information.")
+        time.sleep(0.5)                                                                             # Create a slight delay in the program to prevent a crash
+        if ((time.time() - currentTime) > 30):
+            print("Thirty Seconds passed, Still processing. On IP: " + str(val) + " Located at index: " + str(i))
+            currentTime = time.time()   
+        with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
+            pickle.dump(ipMap, f)
     return ipMap
 
 
