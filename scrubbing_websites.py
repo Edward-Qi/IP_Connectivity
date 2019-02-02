@@ -16,7 +16,8 @@ WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_al
 PING_FILE = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt"                                                           # Write the pings to this file
 IP_LIST = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle"                                                    # The list of ip addresses from the scrapped text file.
 UPPER_BOUND = 9751                                                                                                                 # The upper bound of the ip links
-IPADDRESS_DICT_FILE_NO_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_No_Avg.pickle"              # The location of the pickle file that stores the information regarding IP addresses.
+IPADDRESS_DICT_FILE_NO_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_No_Avg.pickle"             # The location of the pickle file that stores the information regarding IP addresses.
+IPADDRESS_DICT_FILE_WITH_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_With_Avg.pickle"         # The location of the pickle file that contains information on IP Addresses with the averages
 
 class IPAddress:
 
@@ -138,6 +139,8 @@ def pingIPs(numPings, allIPs, pingFile):
     print("All done. The error count was: " + str(errorCount))
     return errorCount
 
+#def getSingleLongandLat(ip):
+
 def getLongandLat(allIPs, dumpInto):
 
     # Function Name: getLongandLat
@@ -158,30 +161,39 @@ def getLongandLat(allIPs, dumpInto):
             ipMap[val] = insertObject                                                           # Add the IP to the dictionary
         else:
             print(str(val) + ": There was an error in getting this IPs information.")
-        time.sleep(0.08)                                                                             # Create a slight delay in the program to prevent a crash
+        time.sleep(0.5)                                                                             # Create a slight delay in the program to prevent a crash
         if ((time.time() - currentTime) > 30):
             print("Thirty Seconds passed, Still processing. On IP: " + str(val) + " Located at index: " + str(i))
             currentTime = time.time()   
-        with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
-            pickle.dump(ipMap, f)
+        print(i)
+    with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
+        pickle.dump(ipMap, f)
     return ipMap
 
-def parsePingFileForAvgs(pingFile, ipDictionary):  
+def parsePingFileForAvgs(pingFile, ipDictionary, dumpInto):  
 
     # Function Name: parsePingFileForAvgs
     # Function Description: Parse the ping file and get the average speeds
-    # Parameters: pingFile (The file with all the ping requests), ipDictionary (The ip dictionary that contains all the keys)
-    # Returns: ipDictionary (The modified dictionary with averages)
+    # Parameters: pingFile (The file with all the ping requests), ipDictionary (The ip dictionary that contains all IP Address objects), 
+    # dumpInto (The pickle to dump the file with the averages)
+    # Returns: None
     # Throws: None
-
+    num = 0
     with open(pingFile, "r") as f:
         lines = f.readlines()
         for l in lines[1::2]:                                               # Loop through all lines, ignoring header.
             ip = (l.split('Pinging ')[-1].split('with')[0])                 # Add last element to list (i.e. the process name)
             ip = ip.strip()                                                 # Remove the white space at the end.
             avg = (l.split()[-1].split(r"\r")[0])                           # Parse the average 
-            avg = re.sub("[^0-9]", "", avg)                                 
-            ipDictionary[ip].changeAvg(avg)                                 # Change the value of the average
+            avg = re.sub("[^0-9]", "", avg)     
+            try:                            
+                ipDictionary[ip].changeAvg(avg)                                 # Change the value of the average
+            except:
+                num += 1
+    with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
+        pickle.dump(ipDictionary, f)
+    print(num)
+    print(len(ipDictionary))
     return ipDictionary 
 
 def getAverageAndStdDev(ipDictionary):
@@ -222,23 +234,10 @@ def upDateZScore(ipDictionary, theCityAvg, theCitySTD):
             numVals += 1
     print("The number of used in the averages and standard deviation: " + str(numVals))
 
-with open(IPADDRESS_DICT_FILE_NO_AVG, "rb") as ips:               # Pickle list file
+with open(IP_LIST, "rb") as ips:           # Pickle list file
     ipDict = pickle.load(ips)
 ######errorCount = pingIPs(15, e, PING_FILE)                  # Run everytime you desire to find recalibrate your pings
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # Only needs to be run ONCE! Writes the raw data from the site to a text file.
-#with open(IPADDRESS_DICT_FILE, "rb") as f:
-#    dictNoAvg = pickle.load(f)
-#avgDict = parsePingFileForAvgs(PING_FILE, dictNoAvg)
-
-""" newDict = {}
-for ind, val in ipDict.items():
-    newDict[ind] = IPAddress(val.getLongitude(), val.getLatitude(), val.getAverage(), val.getZipCode())
-
-with open(IPADDRESS_DICT_FILE_NO_AVG, "+wb") as ips:               # Pickle list file
-    pickle.dump(newDict, ips) """
-counter = 0
-for ind, val in ipDict.items():
-    print(str(val.getAverage()) + "    " + str(val.getLongitude()) + "    " + str(val.getLatitude()) + "   " + str(val.getZipCode()) + "     " + str(val.getZScore()))
-    counter += 1
-    if counter > 500:
-        exit(0)
+print(len(ipDict))
+getLongandLat(ipDict, IPADDRESS_DICT_FILE_NO_AVG)
+####parsePingFileForAvgs(PING_FILE, ipDict, IPADDRESS_DICT_FILE_WITH_AVG)
