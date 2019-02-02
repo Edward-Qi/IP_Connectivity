@@ -10,10 +10,11 @@ import subprocess
 import pickle
 import re                           # Import the regex module.
 
-INITIAL_URL = r"https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=1&gNr=50"             # The link that contains all IPs in Toronto
-WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_all.txt'                      # File that contains all the ip addresses
-PING_FILE = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt"                                    # Write the pings to this file
-UPPER_BOUND = 9751                                                                                          # The upper bound of the ip links
+INITIAL_URL = r"https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=1&gNr=50"                                    # The link that contains all IPs in Toronto
+WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_all.txt'                                             # File that contains all the ip addresses
+PING_FILE = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt"                                                           # Write the pings to this file
+UPPER_BOUND = 9751                                                                                                                 # The upper bound of the ip links
+IPADDRESS_DICT_FILE = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\IP_Address_Obj_Details_No_AVG.pickle"        # The location of the pickle file that stores the information regarding IP addresses.
 
 class IPAddress:
 
@@ -123,6 +124,7 @@ def pingIPs(numPings, allIPs, pingFile):
         if ((time.time() - currentTime) > 300):
             print("Five minutes has passed, I am still pinging! Currently on IP: " + str(val) + " Located at index: " + str(idx))
             currentTime = time.time()                                                               # Indicate that the program is still pinging and reset timer
+    print("All done. The error count was: " + str(errorCount))
     return errorCount
 
 def getLongandLat(allIPs, dumpInto):
@@ -145,7 +147,7 @@ def getLongandLat(allIPs, dumpInto):
             ipMap[val] = insertObject                                                           # Add the IP to the dictionary
         else:
             print(str(val) + ": There was an error in getting this IPs information.")
-        time.sleep(0.5)                                                                             # Create a slight delay in the program to prevent a crash
+        time.sleep(0.2)                                                                             # Create a slight delay in the program to prevent a crash
         if ((time.time() - currentTime) > 30):
             print("Thirty Seconds passed, Still processing. On IP: " + str(val) + " Located at index: " + str(i))
             currentTime = time.time()   
@@ -158,7 +160,7 @@ def parsePingFileForAvgs(pingFile, ipDictionary):
     # Function Name: parsePingFileForAvgs
     # Function Description: Parse the ping file and get the average speeds
     # Parameters: pingFile (The file with all the ping requests), ipDictionary (The ip dictionary that contains all the keys)
-    # Returns: None
+    # Returns: ipDictionary (The modified dictionary with averages)
     # Throws: None
 
     with open(pingFile, "r") as f:
@@ -168,11 +170,21 @@ def parsePingFileForAvgs(pingFile, ipDictionary):
             ip = ip.strip()                                                 # Remove the white space at the end.
             avg = (l.split()[-1].split(r"\r")[0])                           # Parse the average 
             avg = re.sub("[^0-9]", "", avg)                                 
-            ipDictionary[ip].changeAvg(avg)                                 # Change the value of the average 
+            ipDictionary[ip].changeAvg(avg)                                 # Change the value of the average
+    return ipDictionary 
 
-with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:               # Pickle list file
-    e = pickle.load(input_file)
+##with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:               # Pickle list file
+##    e = pickle.load(input_file)
 
-errorCount = pingIPs(15, e, PING_FILE)
-print("All done. The error count was: " + str(errorCount))
+######errorCount = pingIPs(15, e, PING_FILE)                  # Run everytime you desire to find recalibrate your pings
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # Only needs to be run ONCE! Writes the raw data from the site to a text file.
+with open(IPADDRESS_DICT_FILE, "rb") as f:
+    dictNoAvg = pickle.load(f)
+avgDict = parsePingFileForAvgs(PING_FILE, dictNoAvg)
+
+counter = 0
+for i, val in avgDict.items():
+    print(str(i) + "-----------------" + str(val.getLongitude()) + "   " + str(val.getLatitude()) + "    " + str(val.getAverage()))
+    counter += 1
+    if counter > 500:
+        exit(0)
