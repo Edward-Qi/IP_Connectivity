@@ -9,12 +9,14 @@ import time
 import subprocess
 import pickle
 import re                           # Import the regex module.
+import statistics
 
 INITIAL_URL = r"https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=1&gNr=50"                                    # The link that contains all IPs in Toronto
 WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_all.txt'                                             # File that contains all the ip addresses
 PING_FILE = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt"                                                           # Write the pings to this file
+IP_LIST = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle"                                                    # The list of ip addresses from the scrapped text file.
 UPPER_BOUND = 9751                                                                                                                 # The upper bound of the ip links
-IPADDRESS_DICT_FILE = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\IP_Address_Obj_Details_No_AVG.pickle"        # The location of the pickle file that stores the information regarding IP addresses.
+IPADDRESS_DICT_FILE_NO_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_No_Avg.pickle"              # The location of the pickle file that stores the information regarding IP addresses.
 
 class IPAddress:
 
@@ -156,7 +158,7 @@ def getLongandLat(allIPs, dumpInto):
             ipMap[val] = insertObject                                                           # Add the IP to the dictionary
         else:
             print(str(val) + ": There was an error in getting this IPs information.")
-        time.sleep(0.2)                                                                             # Create a slight delay in the program to prevent a crash
+        time.sleep(0.08)                                                                             # Create a slight delay in the program to prevent a crash
         if ((time.time() - currentTime) > 30):
             print("Thirty Seconds passed, Still processing. On IP: " + str(val) + " Located at index: " + str(i))
             currentTime = time.time()   
@@ -182,18 +184,61 @@ def parsePingFileForAvgs(pingFile, ipDictionary):
             ipDictionary[ip].changeAvg(avg)                                 # Change the value of the average
     return ipDictionary 
 
-##with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:               # Pickle list file
-##    e = pickle.load(input_file)
+def getAverageAndStdDev(ipDictionary):
 
+    # Function Name: getAverageAndStdDev
+    # Function Description: Calculate the avergae and the standard deviation of all the values in the list.
+    # Parameters: ipDictionary (The dictionary of IP objects) 
+    # Returns: A tuple containing the average and the standard deviation.
+    # Throws: None
+
+    calList = []
+    numVals = 0
+    for i, val in ipDictionary.items():                             # Loop through the entire list and append to list
+        theAverage = float(val.getAverage())                        # Ensure it is the float form
+        if (theAverage != 0.0):
+            calList.append(theAverage)
+            numVals += 1                                            # Tract the number of valid data points    
+    avg = statistics.mean(calList)                                  # Calculate the average and the standard deviation
+    std = statistics.stdev(calList)
+    print("The number of used in the averages and standard deviation: " + str(numVals))
+    return (avg, std)
+
+def upDateZScore(ipDictionary, theCityAvg, theCitySTD):
+
+    # Function Name: upDateZScore
+    # Function Description: Update all the z-scores in the dictionary.
+    # Parameters: ipDictionary (The dictionary of IP objects) --> Changes the object, 
+    # theCityAvg (The average of ping responses from the city), theCitySTD (The cities standard deviation) 
+    # Returns: None
+    # Throws: None
+
+    numVals = 0
+    for i, val in ipDictionary.items():   
+        thePingAverage = float(val.getAverage()) 
+        if (thePingAverage != 0.0):
+            newZ = (thePingAverage - theCityAvg) / theCitySTD
+            val.changeZScore(newZ)
+            numVals += 1
+    print("The number of used in the averages and standard deviation: " + str(numVals))
+
+with open(IPADDRESS_DICT_FILE_NO_AVG, "rb") as ips:               # Pickle list file
+    ipDict = pickle.load(ips)
 ######errorCount = pingIPs(15, e, PING_FILE)                  # Run everytime you desire to find recalibrate your pings
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # Only needs to be run ONCE! Writes the raw data from the site to a text file.
-with open(IPADDRESS_DICT_FILE, "rb") as f:
-    dictNoAvg = pickle.load(f)
-avgDict = parsePingFileForAvgs(PING_FILE, dictNoAvg)
+#with open(IPADDRESS_DICT_FILE, "rb") as f:
+#    dictNoAvg = pickle.load(f)
+#avgDict = parsePingFileForAvgs(PING_FILE, dictNoAvg)
 
+""" newDict = {}
+for ind, val in ipDict.items():
+    newDict[ind] = IPAddress(val.getLongitude(), val.getLatitude(), val.getAverage(), val.getZipCode())
+
+with open(IPADDRESS_DICT_FILE_NO_AVG, "+wb") as ips:               # Pickle list file
+    pickle.dump(newDict, ips) """
 counter = 0
-for i, val in avgDict.items():
-    print(str(i) + "-----------------" + str(val.getLongitude()) + "   " + str(val.getLatitude()) + "    " + str(val.getAverage()))
+for ind, val in ipDict.items():
+    print(str(val.getAverage()) + "    " + str(val.getLongitude()) + "    " + str(val.getLatitude()) + "   " + str(val.getZipCode()) + "     " + str(val.getZScore()))
     counter += 1
     if counter > 500:
         exit(0)
