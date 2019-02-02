@@ -55,9 +55,9 @@ class IPAddress:
 # Throws: None
 
 def getRawIPAddresses(fileToWrite, loopTo):
-    for i in range(1, UPPER_BOUND, 50):                                                                         # Loop through all the possible links on the website. The step is 50 because that is the maximum number of IPs that are show
+    for i in range(1, UPPER_BOUND, 50):                                                                                                      # Loop through all the possible links on the website. The step is 50 because that is the maximum number of IPs that are show
         stringBuilder = r'https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=' + str(i) + '&gNr=' + str(i + 50)           # Build the string to loop through the entire site
-        res = requests.get(stringBuilder)                                                                       # Send the requests and write to the files
+        res = requests.get(stringBuilder)                                                                                                    # Send the requests and write to the files
         f = open(fileToWrite, "a+")
         f.write(res.text)
         f.close()
@@ -68,8 +68,8 @@ def getRawIPAddresses(fileToWrite, loopTo):
 # Function Description: The function pings all provided ip addresses for packets and records the necessary information.
 # Parameters: numPings (The number of pings to send to each IP), allIPs (The list that contains all the IP addresses to ping), 
 # pingFile (The file to write the ping information)
-# Returns: None
-# Throws: None
+# Returns: errorCount (The number of errors that were incurred during the collection process)
+# Throws: An error if there is an issue with a request. The errors are caught to prevent program termination.
 
 def pingIPs(numPings, allIPs, pingFile):
     errorCount = 0                                                                              # Track the number of throw aways
@@ -90,25 +90,32 @@ def pingIPs(numPings, allIPs, pingFile):
             currentTime = time.time()                                                               # Indicate that the program is still pinging and reset timer
     return errorCount
 
+# Function Name: getLongandLat
+# Function Description: With the list of valid ips, get all the necessary information to map speed onto a graph
+# Parameters: allIPs (List of all valid ips)
+# Returns: ipMap (A map to IPAddress objects that store necessary information)
+# Throws: An error if there is an issue with a request. The errors are caught to prevent program termination.
 
-def getLongandLat(listOfIps, allIPs):
-    ipMap = {}
+def getLongandLat(allIPs):
+    ipMap = {}                                                                                      # Store the ip address information in a hash table
     for i in allIPs:
-        stringBuilder = r"http://ip-api.com/json/" + str(i)
+        stringBuilder = r"http://ip-api.com/json/" + str(i)                                         # Build a string to send request for json
+        insertObject = None                                                                         # Set the default value to none
         try:
             res = requests.get(stringBuilder)
-            data = res.json()
+            data = res.json()                                                                       # Retrieve the JSON format text and build the object with the necessary information
             if (data['status'] == 'success'):
-                insertObject = IPAddress(data['lon'], data['lat'], 0, data['zip'])          # Add proper content
+                insertObject = IPAddress(data['lon'], data['lat'], 0, data['zip'])                  # Add proper content
                 ipMap[i] = insertObject
             else:
                  print(str(i) + ": There was an error in getting this IPs information.")
         except:
-            print(str(i) + ": There was an error in getting this IPs information.")
+            print(str(i) + ": There was an error in getting this IPs information.")                 # Keep the program purring, record error and move on
+    return ipMap
 
 
 
-with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:
+with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:               # Pickle list file
     e = pickle.load(input_file)
 
 errorCount = pingIPs(15, e, r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt")
