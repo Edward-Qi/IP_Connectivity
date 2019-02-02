@@ -14,6 +14,40 @@ WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_al
 WRITE_TO_PINGS = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt"                               # Write the pings to this file
 UPPER_BOUND = 9751                                                                                          # The upper bound of the ip links
 
+# Class: Determines how an IPAddress and its relevant information is stored
+
+class IPAddress:
+
+    # Function Name: __init__
+    # Function Description: Initiate the IP Address. 
+    # Parameters: longitude (The longitude where the IP address is located), latitude (The longitude where the IP address is located), 
+    # average (The average time it takes to send 15 ping requests), zipCode (The zip code of the ip address)
+    # Returns: None
+    # Throws: None
+
+    def __init__(self, longitude, latitude, average, zipCode):
+        self.longitude = longitude
+        self.latitude = latitude
+        self.average = average
+        self.zipCode = zipCode
+
+    # Accessor method for the longitude
+    def getLongitude(self):
+        return self.longitude
+
+    # Accessor method for the latitude
+    def getLatitude(self):
+        return self.latitude
+
+    # Accessor method for the average of packets sent
+    def getAverage(self):
+        return self.average
+
+    # Accessor method for the zipCode
+    def getZipCode(self):
+        return self.zipCode
+
+
 # Function Name: getRawIPAddresses
 # Function Description: The function gets all the raw data from the site including ip addresses. 
 # Parameters: fileToWrite (The path to the text file with the raw data), loopTo (The upper bound of the website to loop through)
@@ -38,26 +72,41 @@ def getRawIPAddresses(fileToWrite, loopTo):
 # Throws: None
 
 def pingIPs(numPings, allIPs, pingFile):
-    errorCount = 0
+    errorCount = 0                                                                              # Track the number of throw aways
     currentTime = time.time()
     for i in allIPs:
         try:
             commandString = "ping -n " + str(numPings) + " -w 3000 " + str(i)                   # Loop through all IPs, and ping each one numPings times.
             commandOut = subprocess.check_output(commandString)                                 # -w specifies the timeout value, -n specifies the number of times to ping
             f = open(pingFile, "a+")
-            f.write(str(commandOut))                                                                 # Record the output and write to the file.
+            f.write(str(commandOut))                                                            # Record the output and write to the file.
             f.write('\n' + 50 * "-" + '\n')
             f.close()
         except:
-            errorCount += 1
+            errorCount += 1                                                                     # Keep the algorithm purring, record failed query
             print("There was an error at IP: " + str(i))
         if ((time.time() - currentTime) > 300):
             print("Five minutes has passed, I am still pinging! Currently on IP: " + str(i))
             currentTime = time.time()                                                               # Indicate that the program is still pinging and reset timer
     return errorCount
 
-def getLongandLat(hashMapIP):
-    print(hashMapIP)
+
+def getLongandLat(listOfIps, allIPs):
+    ipMap = {}
+    for i in allIPs:
+        stringBuilder = r"http://ip-api.com/json/" + str(i)
+        try:
+            res = requests.get(stringBuilder)
+            data = res.json()
+            if (data['status'] == 'success'):
+                insertObject = IPAddress(data['lon'], data['lat'], 0, data['zip'])          # Add proper content
+                ipMap[i] = insertObject
+            else:
+                 print(str(i) + ": There was an error in getting this IPs information.")
+        except:
+            print(str(i) + ": There was an error in getting this IPs information.")
+
+
 
 with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:
     e = pickle.load(input_file)
