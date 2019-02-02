@@ -10,6 +10,8 @@ import subprocess
 import pickle
 import re                           # Import the regex module.
 import statistics
+import matplotlib
+import matplotlib.pyplot as plt
 
 INITIAL_URL = r"https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=1&gNr=50"                                    # The link that contains all IPs in Toronto
 WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_all.txt'                                             # File that contains all the ip addresses
@@ -18,6 +20,7 @@ IP_LIST = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle" 
 UPPER_BOUND = 9751                                                                                                                 # The upper bound of the ip links
 IPADDRESS_DICT_FILE_NO_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_No_Avg.pickle"             # The location of the pickle file that stores the information regarding IP addresses.
 IPADDRESS_DICT_FILE_WITH_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_With_Avg.pickle"         # The location of the pickle file that contains information on IP Addresses with the averages
+IMAGE_TWO_D_PLOT = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\image_TwoD_Plot.png"                            # The plot of the 2-D plot 
 
 class IPAddress:
 
@@ -161,23 +164,25 @@ def getLongandLat(allIPs, dumpInto):
             ipMap[val] = insertObject                                                           # Add the IP to the dictionary
         else:
             print(str(val) + ": There was an error in getting this IPs information.")
-        time.sleep(0.5)                                                                             # Create a slight delay in the program to prevent a crash
+        time.sleep(0.5)       ##### INCREASE IF STOPS                                                                          # Create a slight delay in the program to prevent a crash
         if ((time.time() - currentTime) > 30):
             print("Thirty Seconds passed, Still processing. On IP: " + str(val) + " Located at index: " + str(i))
             currentTime = time.time()   
-        print(i)
     with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
         pickle.dump(ipMap, f)
     return ipMap
 
-def parsePingFileForAvgs(pingFile, ipDictionary, dumpInto):  
+def parsePingFileForAvgs(pingFile, getIPObjectsNoAvg, dumpInto):  
 
     # Function Name: parsePingFileForAvgs
     # Function Description: Parse the ping file and get the average speeds
-    # Parameters: pingFile (The file with all the ping requests), ipDictionary (The ip dictionary that contains all IP Address objects), 
+    # Parameters: pingFile (The file with all the ping requests), getIPObjectsNoAvg (The ip dictionary file name that contains all IP Address objects), 
     # dumpInto (The pickle to dump the file with the averages)
     # Returns: None
     # Throws: None
+
+    with open(getIPObjectsNoAvg, "rb") as ips:           # Pickle list file
+        ipDict = pickle.load(ips)
     num = 0
     with open(pingFile, "r") as f:
         lines = f.readlines()
@@ -187,14 +192,13 @@ def parsePingFileForAvgs(pingFile, ipDictionary, dumpInto):
             avg = (l.split()[-1].split(r"\r")[0])                           # Parse the average 
             avg = re.sub("[^0-9]", "", avg)     
             try:                            
-                ipDictionary[ip].changeAvg(avg)                                 # Change the value of the average
+                ipDict[ip].changeAvg(avg)                                 # Change the value of the average
             except:
                 num += 1
     with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
-        pickle.dump(ipDictionary, f)
+        pickle.dump(ipDict, f)
     print(num)
-    print(len(ipDictionary))
-    return ipDictionary 
+    print(len(ipDict))
 
 def getAverageAndStdDev(ipDictionary):
 
@@ -234,10 +238,32 @@ def upDateZScore(ipDictionary, theCityAvg, theCitySTD):
             numVals += 1
     print("The number of used in the averages and standard deviation: " + str(numVals))
 
-with open(IP_LIST, "rb") as ips:           # Pickle list file
-    ipDict = pickle.load(ips)
-######errorCount = pingIPs(15, e, PING_FILE)                  # Run everytime you desire to find recalibrate your pings
-######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # Only needs to be run ONCE! Writes the raw data from the site to a text file.
-print(len(ipDict))
-getLongandLat(ipDict, IPADDRESS_DICT_FILE_NO_AVG)
-####parsePingFileForAvgs(PING_FILE, ipDict, IPADDRESS_DICT_FILE_WITH_AVG)
+def graph2D(ipDictionary, fileFigure):
+
+    # Function Name: graph2D
+    # Function Description: Plot a 2D representation of the data.
+    # Parameters: ipDictionary (The dictionary of IP objects), fileFigure (The destination of the python file) 
+    # Returns: None
+    # Throws: None
+
+    longitudeAxis = []                                  # The three different types of axises
+    latitudeAxis = []
+    colourZScore = []
+    for ind, vals in ipDictionary.items():              # Iterate throught the entire dictionary and get the axis points
+        longitudeAxis.append(vals.getLongitude())
+        latitudeAxis.append(vals.getLatitude())
+        colourZScore.append(vals.getZScore())
+    fig = plt.figure()
+    plt.plot(longitudeAxis, latitudeAxis, c=colourZScore)                   # Plot the appropriate values
+    plt.title('Internet Speed Relative To Torontonians')
+    plt.ylabel('Latitude')
+    plt.xlabel('Longitude')
+    fig = plt.figure()
+    fig.savefig(fileFigure)
+
+######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # 1. FIRST TASK: Writes the raw data from the site to a text file.
+######parseIPAddresses(WRITE_TO_IPS, IP_LIST)                 # 2. SECOND TASK: Writes the ip addresses into a list 
+######errorCount = pingIPs(15, e, PING_FILE)                  # 3. THIRD TASK: Ping the specified desired IP Addresses
+######getLongandLat(ipDict, IPADDRESS_DICT_FILE_NO_AVG)       # 4. FOURTH TASK: Find the longitude and latitude of each 
+######parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
+
