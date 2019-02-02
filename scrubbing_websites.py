@@ -15,9 +15,9 @@ WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_al
 WRITE_TO_PINGS = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\pings.txt"                               # Write the pings to this file
 UPPER_BOUND = 9751                                                                                          # The upper bound of the ip links
 
-# Class: Determines how an IPAddress and its relevant information is stored
-
 class IPAddress:
+
+    # Class: Determines how an IPAddress and its relevant information is stored
 
     # Function Name: __init__
     # Function Description: Initiate the IP Address. 
@@ -48,14 +48,14 @@ class IPAddress:
     def getZipCode(self):
         return self.zipCode
 
-
-# Function Name: getRawIPAddresses
-# Function Description: The function gets all the raw data from the site including ip addresses. 
-# Parameters: fileToWrite (The path to the text file with the raw data), loopTo (The upper bound of the website to loop through)
-# Returns: None
-# Throws: None
-
 def getRawIPAddresses(fileToWrite, loopTo):
+
+    # Function Name: getRawIPAddresses
+    # Function Description: The function gets all the raw data from the site including ip addresses. 
+    # Parameters: fileToWrite (The path to the text file with the raw data), loopTo (The upper bound of the website to loop through)
+    # Returns: None
+    # Throws: None
+
     for i in range(1, UPPER_BOUND, 50):                                                                                                      # Loop through all the possible links on the website. The step is 50 because that is the maximum number of IPs that are show
         stringBuilder = r'https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=' + str(i) + '&gNr=' + str(i + 50)           # Build the string to loop through the entire site
         res = requests.get(stringBuilder)                                                                                                    # Send the requests and write to the files
@@ -65,13 +65,14 @@ def getRawIPAddresses(fileToWrite, loopTo):
         print(str(i) + ": Another Request Good.")
         time.sleep(1)                                                                                                # Prevent the program from sending too many requests                                                                        
 
-# Function Name: parseIPAddresses
-# Function Description: The function parses the IP addresses from the raw data file 
-# Parameters: rawIPFile (The data that was scrubbed from the internet), dumpInto (The pickle file that will retrieve the dumped list)
-# Returns: errorCount (The number of lines that could not be parsed)
-# Throws: Throw an error when the line cannot be read.
-
 def parseIPAddresses(rawIPFile, dumpInto):
+
+    # Function Name: parseIPAddresses
+    # Function Description: The function parses the IP addresses from the raw data file 
+    # Parameters: rawIPFile (The data that was scrubbed from the internet), dumpInto (The pickle file that will retrieve the dumped list)
+    # Returns: errorCount (The number of lines that could not be parsed)
+    # Throws: Throw an error when the line cannot be read.
+
     ipAddresses = []                                                                # Where the final ip address will be stored.
     err_occur = []                                                                  # The list where we will store results.
     errorCount = 0
@@ -93,14 +94,15 @@ def parseIPAddresses(rawIPFile, dumpInto):
     with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
         pickle.dump(ipAddresses, f)
 
-# Function Name: pingIPs
-# Function Description: The function pings all provided ip addresses for packets and records the necessary information.
-# Parameters: numPings (The number of pings to send to each IP), allIPs (The list that contains all the IP addresses to ping), 
-# pingFile (The file to write the ping information)
-# Returns: errorCount (The number of errors that were incurred during the collection process)
-# Throws: An error if there is an issue with a request. The errors are caught to prevent program termination.
-
 def pingIPs(numPings, allIPs, pingFile):
+
+    # Function Name: pingIPs
+    # Function Description: The function pings all provided ip addresses for packets and records the necessary information.
+    # Parameters: numPings (The number of pings to send to each IP), allIPs (The list that contains all the IP addresses to ping), 
+    # pingFile (The file to write the ping information)
+    # Returns: errorCount (The number of errors that were incurred during the collection process)
+    # Throws: An error if there is an issue with a request. The errors are caught to prevent program termination.
+
     errorCount = 0                                                                              # Track the number of throw aways
     currentTime = time.time()
     for idx, val in enumerate(allIPs):
@@ -119,13 +121,14 @@ def pingIPs(numPings, allIPs, pingFile):
             currentTime = time.time()                                                               # Indicate that the program is still pinging and reset timer
     return errorCount
 
-# Function Name: getLongandLat
-# Function Description: With the list of valid ips, get all the necessary information to map speed onto a graph
-# Parameters: allIPs (List of all valid ips), dumpInto (The pickle file with the dictionary of IP objects)
-# Returns: ipMap (A map to IPAddress objects that store necessary information)
-# Throws: An error if there is an issue with a request. The errors are caught to prevent program termination.
-
 def getLongandLat(allIPs, dumpInto):
+
+    # Function Name: getLongandLat
+    # Function Description: With the list of valid ips, get all the necessary information to map speed onto a graph
+    # Parameters: allIPs (List of all valid ips), dumpInto (The pickle file with the dictionary of IP objects)
+    # Returns: ipMap (A map to IPAddress objects that store necessary information)
+    # Throws: An error if there is an issue with a request. The errors are caught to prevent program termination.
+
     ipMap = {}   
     currentTime = time.time()                                                                   # Store the ip address information in a hash table
     for i, val in enumerate(allIPs):
@@ -145,7 +148,6 @@ def getLongandLat(allIPs, dumpInto):
         with open(dumpInto, 'wb+') as f:            # Dump the contents into the following pickle file
             pickle.dump(ipMap, f)
     return ipMap
-
 
 
 with open(r"C:\Users\micha\Documents\GitHub\IP_Connectivity\ipAddresses.pickle", "rb") as input_file:               # Pickle list file
