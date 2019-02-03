@@ -129,7 +129,7 @@ def pingIPs(numPings, allIPs, pingFile):
     with open(allIPs, "rb") as ips:           # Pickle list file
         temp = pickle.load(ips)
     errorCount = 0  
-    temp = temp[2600:]                                                                            # Track the number of throw aways
+    temp = temp[2800:]                                                                            # Track the number of throw aways
     currentTime = time.time()
     for idx, val in enumerate(temp):
         try:
