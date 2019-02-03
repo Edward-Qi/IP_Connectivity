@@ -21,7 +21,8 @@ UPPER_BOUND = 9751                                                              
 IPADDRESS_DICT_FILE_NO_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_No_Avg.pickle"             # The location of the pickle file that stores the information regarding IP addresses.
 IPADDRESS_DICT_FILE_WITH_AVG = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_With_Avg.pickle"         # The location of the pickle file that contains information on IP Addresses with the averages
 IPADDRESS_DICT_FILE_WITH_ZSCORES = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\ip_Objects_With_Avg_AND_ZScore.pickle"       # Pickle file with all perks and with ips with a zscore of 0
-IMAGE_TWO_D_PLOT = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\image_TwoD_Plot.png"                            # The plot of the 2-D plot 
+IMAGE_TWO_D_PLOT_NON_DOWN = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\image_TwoD_Plot_Non_Down.png"                            # The plot of the 2-D plot that includes the greater area
+IMAGE_TWO_D_PLOT_DOWN = r"C:\Users\micha\Documents\GitHub\IP_Connectivity\Pickled_Files\image_TwoD_Plot_Down.png"                                    # The plot of the 2-D that only involves the downtown core.
 
 class IPAddress:
 
@@ -251,11 +252,29 @@ def upDateZScore(ipDictionary, theCityAvg, theCitySTD, dumpInto):
         pickle.dump(leanDict, f)
     print("The number of used in the averages and standard deviation in upDateZScore: " + str(numVals))
 
-def graphTwoD(ipDictionary, fileFigure):
+def coreReqs(long, lat, zScore, isCN):
+
+    # Function Name: coreReqs
+    # Function Description: Determine whether the point should be included in the graph.
+    # Parameters: long (The longitude), lat (The latitude), zScore (The z-score), isCN (Whether to include the down town core) 
+    # Returns: True (If the value is good) otherwise False
+    # Throws: None
+
+    if (((long > -79.49) and (long < -79.35)) and ((lat > 43.63) 
+       and (lat < 43.72)) and (zScore < 3)):
+        return True
+    elif (((long > -79.57) and (long < -79.33)) and ((lat > 43.62) 
+        and (lat < 43.85)) and (zScore < 3) and (isCN == False)):
+        return True
+    else:
+        return False
+
+def graphTwoD(ipDictionary, cnFigure, nonCNFigure, isCN):
 
     # Function Name: graphTwoD
     # Function Description: Plot a 2D representation of the data.
-    # Parameters: ipDictionary (The dictionary name of IP objects), fileFigure (The destination of the python file) 
+    # Parameters: ipDictionary (The dictionary name of IP objects), cnFigure (The destination of the figure in the downtown core),
+    # nonCNFigure (The destination of the non-downtown core), isCN (Focus the attention on the down core) 
     # Returns: None
     # Throws: None
 
@@ -267,30 +286,34 @@ def graphTwoD(ipDictionary, fileFigure):
     colourZScore = []
     avgTime = []
     for ind, vals in ipDict.items():                    # Iterate throught the entire dictionary and get the axis points
-        if (((vals.getLongitude() > -79.57) and (vals.getLongitude() < -79.33)) and ((vals.getLatitude() > 43.62) 
-            and (vals.getLatitude() < 43.85)) and (vals.getZScore() < 3)):
+        if (coreReqs(vals.getLongitude(), vals.getLatitude(), vals.getZScore(), isCN) == True):         # Determine the scope of the image
             longitudeAxis.append(vals.getLongitude())
             latitudeAxis.append(vals.getLatitude())
             colourZScore.append(vals.getZScore())
             avgTime.append(float(vals.getAverage()))
             numUsed += 1
-    #plt.plot(longitudeAxis, latitudeAxis, c=colourZScore)                   # Plot the appropriate values
+    #plt.plot(longitudeAxis, latitudeAxis, c=colourZScore)                   # Plot the appropriate values based on standardised
     norm = [float(i)/sum(avgTime) for i in avgTime]
     plt.scatter(longitudeAxis, latitudeAxis, c=norm, cmap=plt.cm.Paired)                # We can use the normalised score or the standardised score
     plt.title('Internet Speed Relative To Torontonians')
     plt.ylabel('Latitude')
     plt.xlabel('Longitude')
     plt.colorbar()
-    fig = matplotlib.pyplot.gcf()
+    fig = plt.gcf()
     fig.set_size_inches(25, 13)
-    fig.savefig(fileFigure, dpi=110)
+    if (isCN == True):
+        fig.savefig(cnFigure, dpi=110)
+    else:
+        fig.savefig(nonCNFigure, dpi=110)
+    plt.clf()                                                                           # Clear the plots
     print("The number of values used: " + str(numUsed))
 
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # 1. FIRST TASK: Writes the raw data from the site to a text file.
 ######parseIPAddresses(WRITE_TO_IPS, IP_LIST)                 # 2. SECOND TASK: Writes the ip addresses into a list 
 ######errorCount = pingIPs(15, e, PING_FILE)                  # 3. THIRD TASK: Ping the specified desired IP Addresses
 ######getLongandLat(ipDict, IPADDRESS_DICT_FILE_NO_AVG)       # 4. FOURTH TASK: Find the longitude and latitude of each 
-######parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
-#(avg, std) = getAverageAndStdDev(IPADDRESS_DICT_FILE_WITH_AVG)          # 6. SIXTH TASK: Find the average and the standard deviation
-#upDateZScore(IPADDRESS_DICT_FILE_WITH_AVG, avg, std, IPADDRESS_DICT_FILE_WITH_ZSCORES)  # 7. SEVENTH TASK: Put the z-scores into the dictionary and pickle
-graphTwoD(IPADDRESS_DICT_FILE_WITH_ZSCORES, IMAGE_TWO_D_PLOT)   # 8. EIGTH TASK: Put the data into a graph.
+parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
+(avg, std) = getAverageAndStdDev(IPADDRESS_DICT_FILE_WITH_AVG)          # 6. SIXTH TASK: Find the average and the standard deviation
+upDateZScore(IPADDRESS_DICT_FILE_WITH_AVG, avg, std, IPADDRESS_DICT_FILE_WITH_ZSCORES)  # 7. SEVENTH TASK: Put the z-scores into the dictionary and pickle
+for b in (True, False):                                                                 # 8. EIGTH TASK: Put the data into a graph. (Create for both)
+    graphTwoD(IPADDRESS_DICT_FILE_WITH_ZSCORES, IMAGE_TWO_D_PLOT_DOWN, IMAGE_TWO_D_PLOT_NON_DOWN, b)   
