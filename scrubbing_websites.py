@@ -257,10 +257,10 @@ def createCSV(ipDictionary, writeInto_):
     with open(ipDictionary, "rb") as ips:           # Pickle the file
         ipDict = pickle.load(ips)
     with open(writeInto_ , 'a+') as f:
-        f.write("Average, Latitude, Longitude, Z-Score")
+        f.write("Latitude, Longitude, depth, mag \n")
     for indx, vals in ipDict.items():
         with open(writeInto_ , 'a+') as f:
-            stringBuilder = str(vals.getAverage()) + "," + str(vals.getLatitude()) + "," + str(vals.getLongitude()) + "," + str(vals.getZScore()) + '\n'
+            stringBuilder =  str(vals.getLatitude()) + "," + str(vals.getLongitude()) + "," + str(vals.getZScore()) + "," + str(vals.getAverage()) + '\n'
             f.write(stringBuilder)
 
 def graphTwoD(ipDictionary, cnFigure, nonCNFigure):
@@ -300,11 +300,7 @@ def graphTwoD(ipDictionary, cnFigure, nonCNFigure):
     #f.savefig(cnFigure, dpi=110)
     plt.title('Internet Speed Relative To Torontonians')
     plt.ylabel('Latitude')
-    plt.xlabel('Longitude')
-    plt.axvline(x=-79.49, color='r', linestyle='-')
-    plt.axvline(x=-79.35, color='r', linestyle='-')
-    plt.axhline(y=43.63, color='r', linestyle='-')
-    plt.axhline(y=43.72, color='r', linestyle='-')                                             # Plot lines to show imaginary boxes    
+    plt.xlabel('Longitude')                                               
     plt.colorbar()
     fig = plt.gcf()
     fig.set_size_inches(25, 13)
