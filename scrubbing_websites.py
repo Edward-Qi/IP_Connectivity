@@ -256,7 +256,7 @@ def upDateZScore(ipDictionary, theCityAvg, theCitySTD, dumpInto):
 def createCSV(ipDictionary, writeInto_):
     with open(ipDictionary, "rb") as ips:           # Pickle the file
         ipDict = pickle.load(ips)
-    with open(writeInto_ , 'a+') as f:
+    with open(writeInto_ , 'w') as f:                       # Create a new file, overwrite everything
         f.write("Latitude, Longitude, depth, mag \n")
     for indx, vals in ipDict.items():
         with open(writeInto_ , 'a+') as f:
