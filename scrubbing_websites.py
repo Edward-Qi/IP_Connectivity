@@ -259,21 +259,26 @@ def graphTwoD(ipDictionary, fileFigure):
     # Returns: None
     # Throws: None
 
+    numUsed = 0
     with open(ipDictionary, "rb") as ips:           # Pickle the file
         ipDict = pickle.load(ips)
     longitudeAxis = []                                  # The three different types of axises
     latitudeAxis = []
     colourZScore = []
     for ind, vals in ipDict.items():                    # Iterate throught the entire dictionary and get the axis points
-        longitudeAxis.append(vals.getLongitude())
-        latitudeAxis.append(vals.getLatitude())
-        colourZScore.append(vals.getZScore())
-    plt.plot(longitudeAxis, latitudeAxis, c=colourZScore)                   # Plot the appropriate values
+        if (((vals.getLongitude() > -80) and (vals.getLongitude() < -79)) and ((vals.getLatitude() > 43) and (vals.getLatitude() < 45))):
+            longitudeAxis.append(vals.getLongitude())
+            latitudeAxis.append(vals.getLatitude())
+            colourZScore.append(vals.getZScore())
+            numUsed += 1
+    #plt.plot(longitudeAxis, latitudeAxis, c=colourZScore)                   # Plot the appropriate values
+    plt.scatter(longitudeAxis, latitudeAxis, c=colourZScore, cmap=plt.cm.Paired)
     plt.title('Internet Speed Relative To Torontonians')
     plt.ylabel('Latitude')
     plt.xlabel('Longitude')
     plt.savefig(fileFigure)
-
+    print("The number of values used: " + numUsed)
+    
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # 1. FIRST TASK: Writes the raw data from the site to a text file.
 ######parseIPAddresses(WRITE_TO_IPS, IP_LIST)                 # 2. SECOND TASK: Writes the ip addresses into a list 
 ######errorCount = pingIPs(15, e, PING_FILE)                  # 3. THIRD TASK: Ping the specified desired IP Addresses
