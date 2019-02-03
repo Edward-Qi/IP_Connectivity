@@ -126,9 +126,12 @@ def pingIPs(numPings, allIPs, pingFile):
     # Returns: errorCount (The number of errors that were incurred during the collection process)
     # Throws: An error if there is an issue with a request. The errors are caught to prevent program termination.
 
-    errorCount = 0                                                                              # Track the number of throw aways
+    with open(allIPs, "rb") as ips:           # Pickle list file
+        temp = pickle.load(ips)
+    errorCount = 0  
+    temp = temp[2600:]                                                                            # Track the number of throw aways
     currentTime = time.time()
-    for idx, val in enumerate(allIPs):
+    for idx, val in enumerate(temp):
         try:
             commandString = "ping -n " + str(numPings) + " -w 3000 " + str(val)                   # Loop through all IPs, and ping each one numPings times.
             commandOut = subprocess.check_output(commandString)                                 # -w specifies the timeout value, -n specifies the number of times to ping
@@ -292,8 +295,8 @@ def graphTwoD(ipDictionary, cnFigure, nonCNFigure):
             colourZScore.append(vals.getZScore())
             avgTime.append(float(vals.getAverage()))
             numUsed += 1
-    print("The max in toronto: " + max(avgTime))
-    print("The min in toronto: " + min(avgTime))
+    print("The max in toronto: " + str(max(avgTime)))
+    print("The min in toronto: " + str(min(avgTime)))
     #plt.plot(longitudeAxis, latitudeAxis, c=colourZScore)                   # Plot the appropriate values based on standardised
     norm = [float(i)/sum(avgTime) for i in avgTime]
     plt.scatter(longitudeAxis, latitudeAxis, c=norm, cmap=plt.cm.Paired, linewidths=5)
@@ -314,10 +317,10 @@ def graphTwoD(ipDictionary, cnFigure, nonCNFigure):
 
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # 1. FIRST TASK: Writes the raw data from the site to a text file.
 ######parseIPAddresses(WRITE_TO_IPS, IP_LIST)                 # 2. SECOND TASK: Writes the ip addresses into a list 
-######errorCount = pingIPs(15, e, PING_FILE)                  # 3. THIRD TASK: Ping the specified desired IP Addresses
+errorCount = pingIPs(15, IP_LIST, PING_FILE)                  # 3. THIRD TASK: Ping the specified desired IP Addresses
 ######getLongandLat(ipDict, IPADDRESS_DICT_FILE_NO_AVG)       # 4. FOURTH TASK: Find the longitude and latitude of each 
-parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
-(avg, std) = getAverageAndStdDev(IPADDRESS_DICT_FILE_WITH_AVG)          # 6. SIXTH TASK: Find the average and the standard deviation
-upDateZScore(IPADDRESS_DICT_FILE_WITH_AVG, avg, std, IPADDRESS_DICT_FILE_WITH_ZSCORES)  # 7. SEVENTH TASK: Put the z-scores into the dictionary and pickle
-graphTwoD(IPADDRESS_DICT_FILE_WITH_ZSCORES, IMAGE_TWO_D_PLOT_DOWN, IMAGE_TWO_D_PLOT_NON_DOWN)        # 8. EIGTH TASK: Put the data into a graph. (Create for both)
-createCSV(IPADDRESS_DICT_FILE_WITH_ZSCORES, CSV_IP_INFO)
+##parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
+##(avg, std) = getAverageAndStdDev(IPADDRESS_DICT_FILE_WITH_AVG)          # 6. SIXTH TASK: Find the average and the standard deviation
+##upDateZScore(IPADDRESS_DICT_FILE_WITH_AVG, avg, std, IPADDRESS_DICT_FILE_WITH_ZSCORES)  # 7. SEVENTH TASK: Put the z-scores into the dictionary and pickle
+##graphTwoD(IPADDRESS_DICT_FILE_WITH_ZSCORES, IMAGE_TWO_D_PLOT_DOWN, IMAGE_TWO_D_PLOT_NON_DOWN)        # 8. EIGTH TASK: Put the data into a graph. (Create for both)
+##createCSV(IPADDRESS_DICT_FILE_WITH_ZSCORES, CSV_IP_INFO)
