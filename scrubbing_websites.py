@@ -12,6 +12,7 @@ import re                           # Import the regex module.
 import statistics
 import matplotlib
 import matplotlib.pyplot as plt
+import copy
 
 INITIAL_URL = r"https://tools.tracemyip.org/search--city/toronto-%21-ontario:-v-:&gTr=1&gNr=50"                                    # The link that contains all IPs in Toronto
 WRITE_TO_IPS = r'C:\Users\micha\Documents\GitHub\IP_Connectivity\ip_addresses_all.txt'                                             # File that contains all the ip addresses
@@ -309,18 +310,20 @@ def graphTwoD(ipDictionary, cnFigure, nonCNFigure):
     plt.colorbar()
     fig = plt.gcf()
     fig.set_size_inches(25, 13)
-    #f.savefig(cnFigure, dpi=110)
-    fig.savefig(cnFigure, dpi=110)
     fig.savefig(nonCNFigure, dpi=110)
+    plt.axis([-79.45, -79.35, 43.63, 43.73])
+    fig1 = plt.gcf()
+    fig1.set_size_inches(25, 13)
+    fig1.savefig(cnFigure, dpi=110)
     plt.clf()                                                                           # Clear the plots
     print("The number of values used: " + str(numUsed))
 
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # 1. FIRST TASK: Writes the raw data from the site to a text file.
 ######parseIPAddresses(WRITE_TO_IPS, IP_LIST)                 # 2. SECOND TASK: Writes the ip addresses into a list 
-errorCount = pingIPs(15, IP_LIST, PING_FILE)                  # 3. THIRD TASK: Ping the specified desired IP Addresses
+##errorCount = pingIPs(15, IP_LIST, PING_FILE)                  # 3. THIRD TASK: Ping the specified desired IP Addresses
 ######getLongandLat(ipDict, IPADDRESS_DICT_FILE_NO_AVG)       # 4. FOURTH TASK: Find the longitude and latitude of each 
-#parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
-#(avg, std) = getAverageAndStdDev(IPADDRESS_DICT_FILE_WITH_AVG)          # 6. SIXTH TASK: Find the average and the standard deviation
-#upDateZScore(IPADDRESS_DICT_FILE_WITH_AVG, avg, std, IPADDRESS_DICT_FILE_WITH_ZSCORES)  # 7. SEVENTH TASK: Put the z-scores into the dictionary and pickle
-#graphTwoD(IPADDRESS_DICT_FILE_WITH_ZSCORES, IMAGE_TWO_D_PLOT_DOWN, IMAGE_TWO_D_PLOT_NON_DOWN)        # 8. EIGTH TASK: Put the data into a graph. (Create for both)
-#createCSV(IPADDRESS_DICT_FILE_WITH_ZSCORES, CSV_IP_INFO)
+parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
+(avg, std) = getAverageAndStdDev(IPADDRESS_DICT_FILE_WITH_AVG)          # 6. SIXTH TASK: Find the average and the standard deviation
+upDateZScore(IPADDRESS_DICT_FILE_WITH_AVG, avg, std, IPADDRESS_DICT_FILE_WITH_ZSCORES)  # 7. SEVENTH TASK: Put the z-scores into the dictionary and pickle
+graphTwoD(IPADDRESS_DICT_FILE_WITH_ZSCORES, IMAGE_TWO_D_PLOT_DOWN, IMAGE_TWO_D_PLOT_NON_DOWN)        # 8. EIGTH TASK: Put the data into a graph. (Create for both)
+createCSV(IPADDRESS_DICT_FILE_WITH_ZSCORES, CSV_IP_INFO)
