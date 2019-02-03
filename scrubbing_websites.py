@@ -268,7 +268,7 @@ def graphTwoD(ipDictionary, fileFigure):
     avgTime = []
     for ind, vals in ipDict.items():                    # Iterate throught the entire dictionary and get the axis points
         if (((vals.getLongitude() > -79.57) and (vals.getLongitude() < -79.33)) and ((vals.getLatitude() > 43.62) 
-            and (vals.getLatitude() < 43.85)) and (vals.getZScore() < 5)):
+            and (vals.getLatitude() < 43.85)) and (vals.getZScore() < 3)):
             longitudeAxis.append(vals.getLongitude())
             latitudeAxis.append(vals.getLatitude())
             colourZScore.append(vals.getZScore())
@@ -282,9 +282,8 @@ def graphTwoD(ipDictionary, fileFigure):
     plt.xlabel('Longitude')
     plt.colorbar()
     fig = matplotlib.pyplot.gcf()
-    fig.set_size_inches(18.5, 10.5)
-    fig.savefig(fileFigure, dpi=100)
-    #plt.savefig(fileFigure)
+    fig.set_size_inches(25, 13)
+    fig.savefig(fileFigure, dpi=110)
     print("The number of values used: " + str(numUsed))
 
 ######getRawIPAddresses(WRITE_TO, UPPER_BOUND)                # 1. FIRST TASK: Writes the raw data from the site to a text file.
