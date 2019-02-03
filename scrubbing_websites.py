@@ -257,7 +257,7 @@ def createCSV(ipDictionary, writeInto_):
     with open(ipDictionary, "rb") as ips:           # Pickle the file
         ipDict = pickle.load(ips)
     with open(writeInto_ , 'w') as f:                       # Create a new file, overwrite everything
-        f.write("Latitude, Longitude, depth, mag \n")
+        f.write("latitude,longitude,depth,mag \n")
     for indx, vals in ipDict.items():
         with open(writeInto_ , 'a+') as f:
             stringBuilder =  str(vals.getLatitude()) + "," + str(vals.getLongitude()) + "," + str(vals.getZScore()) + "," + str(vals.getAverage()) + '\n'
