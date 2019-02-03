@@ -1,6 +1,5 @@
-time,latitude,longitude,depth,mag,magType,nst,gap,dmin,rms,net,id,updated,place,type,horizontalError,depthError,magError,magNst,status,locationSource,magSource
-2019-02-02T19:10:12.670Z,35.5364,141.1535,37.04,4.9,mb,,117,2.346,0.85,us,us2000jcgs,2019-02-02T19:48:51.400Z,"36km SE of Hasaki, Japan",earthquake,5.2,6.3,0.059,92,reviewed,us,us
-2019-02-02T18:30:42.580Z,17.452,-68.4006,41,3.27,md,13,250,1.062,0.17,pr,pr2019033008,2019-02-02T19:53:59.040Z,"89km SSE of Boca de Yuma, Dominican Republic",earthquake,2.75,11.82,0.44,10,reviewed,pr,pr
-2019-02-02T17:55:40.130Z,-41.3279,-88.2402,16.69,5.5,mww,,65,10.953,0.92,us,us2000jcg3,2019-02-02T19:57:23.506Z,"West Chile Rise",earthquake,10.5,4.6,0.073,18,reviewed,us,us
-2019-02-02T17:32:35.350Z,25.2191,95.2028,101.24,4.2,mb,,65,1.282,0.76,us,us2000jcfu,2019-02-02T18:54:23.040Z,"86km SE of Phek, India",earthquake,6,8.2,0.098,29,reviewed,us,us
-2019-02-02T17:10:15.460Z,13.6274,-92.5217,10,4.3,mb,,180,1.199,0.97,us,us2000jcfp,2019-02-02T17:58:53.040Z,"99km SW of Champerico, Guatemala",earthquake,8.8,2,0.074,55,reviewed,us,us
+longitude,latitude,mag
+-79.53,43.9,0.001
+-79.45,43.75,0.005
+-79.43,43.63,0.002
+-79.37,43.77,0.015
