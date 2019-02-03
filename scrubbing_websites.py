@@ -292,6 +292,8 @@ def graphTwoD(ipDictionary, cnFigure, nonCNFigure):
             colourZScore.append(vals.getZScore())
             avgTime.append(float(vals.getAverage()))
             numUsed += 1
+    print("The max in toronto: " + max(avgTime))
+    print("The min in toronto: " + min(avgTime))
     #plt.plot(longitudeAxis, latitudeAxis, c=colourZScore)                   # Plot the appropriate values based on standardised
     norm = [float(i)/sum(avgTime) for i in avgTime]
     plt.scatter(longitudeAxis, latitudeAxis, c=norm, cmap=plt.cm.Paired, linewidths=5)
