@@ -129,7 +129,7 @@ def pingIPs(numPings, allIPs, pingFile):
     with open(allIPs, "rb") as ips:           # Pickle list file
         temp = pickle.load(ips)
     errorCount = 0  
-    temp = temp[2800:]                                                                            # Track the number of throw aways
+    temp = temp[3800:]                                                                            # Track the number of throw aways
     currentTime = time.time()
     for idx, val in enumerate(temp):
         try:
@@ -319,8 +319,8 @@ def graphTwoD(ipDictionary, cnFigure, nonCNFigure):
 ######parseIPAddresses(WRITE_TO_IPS, IP_LIST)                 # 2. SECOND TASK: Writes the ip addresses into a list 
 errorCount = pingIPs(15, IP_LIST, PING_FILE)                  # 3. THIRD TASK: Ping the specified desired IP Addresses
 ######getLongandLat(ipDict, IPADDRESS_DICT_FILE_NO_AVG)       # 4. FOURTH TASK: Find the longitude and latitude of each 
-##parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
-##(avg, std) = getAverageAndStdDev(IPADDRESS_DICT_FILE_WITH_AVG)          # 6. SIXTH TASK: Find the average and the standard deviation
-##upDateZScore(IPADDRESS_DICT_FILE_WITH_AVG, avg, std, IPADDRESS_DICT_FILE_WITH_ZSCORES)  # 7. SEVENTH TASK: Put the z-scores into the dictionary and pickle
-##graphTwoD(IPADDRESS_DICT_FILE_WITH_ZSCORES, IMAGE_TWO_D_PLOT_DOWN, IMAGE_TWO_D_PLOT_NON_DOWN)        # 8. EIGTH TASK: Put the data into a graph. (Create for both)
-##createCSV(IPADDRESS_DICT_FILE_WITH_ZSCORES, CSV_IP_INFO)
+#parsePingFileForAvgs(PING_FILE, IPADDRESS_DICT_FILE_NO_AVG, IPADDRESS_DICT_FILE_WITH_AVG)         # 5. FIFTH TASK: Put the averages from the text file
+#(avg, std) = getAverageAndStdDev(IPADDRESS_DICT_FILE_WITH_AVG)          # 6. SIXTH TASK: Find the average and the standard deviation
+#upDateZScore(IPADDRESS_DICT_FILE_WITH_AVG, avg, std, IPADDRESS_DICT_FILE_WITH_ZSCORES)  # 7. SEVENTH TASK: Put the z-scores into the dictionary and pickle
+#graphTwoD(IPADDRESS_DICT_FILE_WITH_ZSCORES, IMAGE_TWO_D_PLOT_DOWN, IMAGE_TWO_D_PLOT_NON_DOWN)        # 8. EIGTH TASK: Put the data into a graph. (Create for both)
+#createCSV(IPADDRESS_DICT_FILE_WITH_ZSCORES, CSV_IP_INFO)
