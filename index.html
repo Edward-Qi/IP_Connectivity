@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>QHacks2019 Project</title>
+
+  <style>
+    html,
+    body,
+    #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+  </style>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.10/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.10/"></script>
+
+  <script>
+    require([
+      "esri/Map",
+      "esri/layers/CSVLayer",
+      "esri/views/SceneView",
+      "esri/core/urlUtils"
+    ], function(
+      Map,
+      CSVLayer,
+      SceneView,
+      urlUtils
+    ) {
+
+      // If CSV files are not on the same domain as your website, a CORS enabled server
+      // or a proxy is required.
+      var url =
+        "http://csvfile-qhacks.s3-website.us-east-2.amazonaws.com/?fbclid=IwAR0J66IuJQVAli7rHmAWY5I1G7OFOl0XZDbzfXY7aj5g9Oc8QTXB_DjcYMw";
+
+
+
+      var template = {
+        title: "Earthquake Info",
+
+      };
+
+      var csvLayer = new CSVLayer({
+        popupTemplate: template,
+        elevationInfo: {
+          // drapes icons on the surface of the globe
+          mode: "on-the-ground"
+        }
+      });
+
+      csvLayer.renderer = {
+        type: "simple", // autocasts as new SimpleRenderer()
+        symbol: {
+          type: "point-3d", // autocasts as new PointSymbol3D()
+          symbolLayers: [{
+            type: "icon", // autocasts as new IconSymbol3DLayer()
+            material: {
+              color: [238, 69, 0, 0.75]
+            },
+            outline: {
+              width: 0.5,
+              color: "white"
+            },
+            size: "12px"
+          }]
+        }
+      };
+
+      var map = new Map({
+        basemap: "gray",
+        layers: [csvLayer]
+      });
+
+      var view = new SceneView({
+        container: "viewDiv",
+        center: [138, 35],
+        zoom: 4,
+        map: map
+      });
+
+    });
+  </script>
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+</body>
+
+</html>
